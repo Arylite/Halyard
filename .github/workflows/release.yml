@@ -1,0 +1,68 @@
+name: Release
+
+# Push a tag to publish an installer and a self-update package to GitHub Releases.
+#   v0.2.0         stable release (Velopack default channel)
+#   v0.2.0-beta.1  pre-release on the "beta" channel (what "Receive beta updates" follows)
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      REPO_URL: https://github.com/${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Version and channel from tag
+        id: version
+        shell: pwsh
+        run: |
+          $version = '${{ github.ref_name }}'.TrimStart('v')
+          $beta = $version.Contains('-')
+          "value=$version" >> $env:GITHUB_OUTPUT
+          "beta=$($beta.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "channel=$(if ($beta) { 'beta' } else { 'stable' })" >> $env:GITHUB_OUTPUT
+
+      - name: Test
+        run: dotnet test --project tests/Halyard.Services.Tests -c Release
+
+      - name: Install Velopack CLI
+        run: dotnet tool install -g vpk --version 1.2.161
+
+      # The previous release of the same channel lets vpk build a small delta update; the first has none.
+      - name: Download previous release
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $args = @('download', 'github', '--repoUrl', '${{ env.REPO_URL }}', '--outputDir', 'artifacts/releases',
+            '--token', '${{ secrets.GITHUB_TOKEN }}')
+          if ('${{ steps.version.outputs.beta }}' -eq 'true') { $args += @('--channel', 'beta', '--pre') }
+          vpk @args
+
+      - name: Publish and pack
+        shell: pwsh
+        run: >
+          ./tools/Publish-Release.ps1
+          -Version ${{ steps.version.outputs.value }}
+          -Channel ${{ steps.version.outputs.channel }}
+          -RepositoryUrl ${{ env.REPO_URL }}
+
+      - name: Upload to GitHub Releases
+        shell: pwsh
+        run: |
+          $args = @('upload', 'github', '--repoUrl', '${{ env.REPO_URL }}', '--outputDir', 'artifacts/releases',
+            '--releaseName', 'Halyard ${{ steps.version.outputs.value }}', '--tag', '${{ github.ref_name }}',
+            '--token', '${{ secrets.GITHUB_TOKEN }}', '--publish')
+          # A draft would be invisible to installed copies (they read releases anonymously), so
+          # betas are published too, marked as pre-releases.
+          if ('${{ steps.version.outputs.beta }}' -eq 'true') { $args += @('--channel', 'beta', '--pre') }
+          vpk @args

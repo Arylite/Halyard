@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/Halyard.slnx",
+        "-nologo",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "silent",
+        "clear": true
+      }
+    },
+    {
+      "label": "clean",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "clean",
+        "${workspaceFolder}/Halyard.slnx",
+        "-nologo"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish (win-x64)",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "publish",
+        "${workspaceFolder}/src/Halyard/Halyard.csproj",
+        "-c",
+        "Release",
+        "-r",
+        "win-x64",
+        "-o",
+        "${workspaceFolder}/artifacts/win-x64",
+        "-nologo"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "run",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/Halyard/Halyard.csproj",
+        "--no-build",
+        "--no-restore"
+      ],
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "clear": true
+      }
+    },
+    {
+      "label": "run (build)",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/Halyard/Halyard.csproj",
+        "--no-restore"
+      ],
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "clear": true
+      }
+    }
+  ]
+}

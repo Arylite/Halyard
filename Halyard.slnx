@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Halyard.Models/Halyard.Models.csproj" />
+    <Project Path="src/Halyard.Core/Halyard.Core.csproj" />
+    <Project Path="src/Halyard.Services/Halyard.Services.csproj" />
+    <Project Path="src/Halyard/Halyard.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Halyard.Services.Tests/Halyard.Services.Tests.csproj" />
+  </Folder>
+</Solution>

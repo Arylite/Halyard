@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentDialog
+    x:Class="Halyard.Views.DownloadDetailsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Halyard.Controls"
+    xmlns:vm="using:Halyard.ViewModels"
+    Title="{x:Bind ViewModel.Name}"
+    CloseButtonText="Close"
+    DefaultButton="Close"
+    Style="{StaticResource DefaultContentDialogStyle}">
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">760</x:Double>
+
+        <Style x:Key="LabelStyle" BasedOn="{StaticResource CaptionTextBlockStyle}" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Style>
+        <Style x:Key="ValueStyle" BasedOn="{StaticResource BodyStrongTextBlockStyle}" TargetType="TextBlock">
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+    </ContentDialog.Resources>
+
+    <ScrollViewer MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Width="600" Spacing="16">
+            <StackPanel Spacing="6">
+                <Grid>
+                    <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{x:Bind ViewModel.PhaseText, Mode=OneWay}" />
+                    <TextBlock
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind ViewModel.PercentText, Mode=OneWay}" />
+                </Grid>
+                <ProgressBar
+                    IsIndeterminate="{x:Bind ViewModel.IsIndeterminate, Mode=OneWay}"
+                    ShowError="{x:Bind ViewModel.IsFailed, Mode=OneWay}"
+                    ShowPaused="{x:Bind ViewModel.IsPaused, Mode=OneWay}"
+                    Value="{x:Bind ViewModel.Percent, Mode=OneWay}" />
+            </StackPanel>
+
+            <!--  Statistics, three per row  -->
+            <Grid ColumnSpacing="16" RowSpacing="14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel>
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Network now" />
+                    <TextBlock Style="{StaticResource ValueStyle}" Text="{x:Bind ViewModel.SpeedText, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Average" />
+                    <TextBlock Style="{StaticResource ValueStyle}" Text="{x:Bind ViewModel.AverageSpeedText, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Peak" />
+                    <TextBlock Style="{StaticResource ValueStyle}" Text="{x:Bind ViewModel.PeakSpeedText, Mode=OneWay}" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Disk writes" />
+                    <TextBlock Style="{StaticResource ValueStyle}" Text="{x:Bind ViewModel.DiskSpeedText, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Downloaded" />
+                    <TextBlock Style="{StaticResource ValueStyle}" Text="{x:Bind ViewModel.AmountText, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="2">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Connections" />
+                    <TextBlock Style="{StaticResource ValueStyle}" Text="{x:Bind ViewModel.ConnectionsText, Mode=OneWay}" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="2">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Elapsed" />
+                    <TextBlock Style="{StaticResource ValueStyle}" Text="{x:Bind ViewModel.ElapsedText, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="1">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Time left" />
+                    <TextBlock Style="{StaticResource ValueStyle}" Text="{x:Bind ViewModel.RemainingText, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="2">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Type" />
+                    <TextBlock Style="{StaticResource ValueStyle}" Text="{x:Bind ViewModel.Kind}" />
+                </StackPanel>
+            </Grid>
+
+            <!--  Speed over the last minute  -->
+            <Border
+                Height="80"
+                Padding="0,4"
+                Background="{ThemeResource SubtleFillColorTertiaryBrush}"
+                CornerRadius="4">
+                <controls:SpeedGraph Samples="{x:Bind ViewModel.SpeedSamples, Mode=OneWay}" />
+            </Border>
+
+            <StackPanel Spacing="8">
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Delivery" />
+                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{x:Bind ViewModel.ModeText, Mode=OneWay}" />
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Cdns, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Spacing="8" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CdnStatViewModel">
+                            <StackPanel Spacing="4">
+                                <Grid>
+                                    <TextBlock
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind Host}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        Style="{StaticResource SecondaryTextStyle}"
+                                        Text="{x:Bind Detail}" />
+                                </Grid>
+                                <ProgressBar Value="{x:Bind Share}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Install" />
+                <TextBlock
+                    IsTextSelectionEnabled="True"
+                    Style="{StaticResource SecondaryTextStyle}"
+                    Text="{x:Bind ViewModel.Destination}"
+                    TextWrapping="Wrap" />
+                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{x:Bind ViewModel.ContentText}" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

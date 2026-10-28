@@ -1,0 +1,37 @@
+{
+  // C# Dev Kit: load the whole solution so every project is analysed together.
+  "dotnet.defaultSolution": "Halyard.slnx",
+  "dotnet.automaticallyBuildProjects": false,
+  "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "openFiles",
+  "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "openFiles",
+
+  // XAML is XML, but the Red Hat XML extension can't validate WinUI schemas and floods Problems with
+  // false errors. Treat it as XML for highlighting only.
+  "files.associations": {
+    "*.xaml": "xml"
+  },
+  "xml.validation.enabled": false,
+  "xml.validation.noGrammar": "ignore",
+  "xml.format.splitAttributes": "preserve",
+
+  "editor.formatOnSave": true,
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp"
+  },
+  "[xml]": {
+    "editor.formatOnSave": false
+  },
+
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  },
+  "files.watcherExclude": {
+    "**/bin/**": true,
+    "**/obj/**": true
+  },
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  }
+}

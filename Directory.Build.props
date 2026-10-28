@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Version>0.1.0-beta.1</Version>
+    <Authors>Halyard contributors</Authors>
+    <!-- Releases (and self-updates) are published here. CI overrides it with the actual repository. -->
+    <RepositoryUrl>https://github.com/Arylite/Halyard</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Lets the app find its own releases at runtime. -->
+    <AssemblyMetadata Include="RepositoryUrl" Value="$(RepositoryUrl)" />
+  </ItemGroup>
+</Project>

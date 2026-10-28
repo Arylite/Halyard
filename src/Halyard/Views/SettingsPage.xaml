@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Halyard.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Halyard.Controls">
+
+    <Grid Padding="{StaticResource PagePadding}" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <controls:PageHeader Title="Settings" />
+
+        <ScrollViewer
+            Grid.Row="1"
+            Margin="0,0,-16,0"
+            Padding="0,0,16,0"
+            HorizontalScrollBarVisibility="Disabled"
+            HorizontalScrollMode="Disabled">
+            <StackPanel Spacing="{StaticResource CardSpacing}">
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Epic account" />
+
+                <controls:SettingsCard
+                    Description="{x:Bind Account.Details, Mode=OneWay}"
+                    Glyph="&#xE77B;"
+                    Header="{x:Bind Account.DisplayName, Mode=OneWay}">
+                    <controls:SettingsCard.Action>
+                        <Grid>
+                            <Button
+                                Command="{x:Bind Account.SignInCommand}"
+                                Content="Sign in with Epic Games"
+                                Style="{StaticResource AccentButtonStyle}"
+                                Visibility="{x:Bind Account.IsSignedOut, Mode=OneWay}" />
+                            <Button
+                                Command="{x:Bind Account.SignOutCommand}"
+                                Content="Sign out"
+                                Visibility="{x:Bind Account.IsSignedIn, Mode=OneWay}" />
+                        </Grid>
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="General" />
+
+                <controls:SettingsCard
+                    Description="Starts in the notification area when you sign in to Windows."
+                    Glyph="&#xE7E8;"
+                    Header="Launch at startup">
+                    <controls:SettingsCard.Action>
+                        <ToggleSwitch
+                            MinWidth="0"
+                            IsOn="{x:Bind Settings.LaunchAtStartup, Mode=TwoWay}"
+                            OffContent="Off"
+                            OnContent="On" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="Closing the window keeps Halyard in the notification area so downloads continue. Exit from its menu."
+                    Glyph="&#xE73F;"
+                    Header="Close to tray">
+                    <controls:SettingsCard.Action>
+                        <ToggleSwitch
+                            MinWidth="0"
+                            IsOn="{x:Bind Settings.CloseToTray, Mode=TwoWay}"
+                            OffContent="Off"
+                            OnContent="On" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="When an install, update or repair finishes or fails."
+                    Glyph="&#xEA8F;"
+                    Header="Notifications">
+                    <controls:SettingsCard.Action>
+                        <ToggleSwitch
+                            MinWidth="0"
+                            IsOn="{x:Bind Settings.ShowNotifications, Mode=TwoWay}"
+                            OffContent="Off"
+                            OnContent="On" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Installs" />
+
+                <controls:SettingsCard
+                    Description="Queues the update of games installed by Halyard as soon as Epic publishes a new version."
+                    Glyph="&#xE895;"
+                    Header="Update games automatically">
+                    <controls:SettingsCard.Action>
+                        <ToggleSwitch
+                            MinWidth="0"
+                            IsOn="{x:Bind Settings.AutoUpdateGames, Mode=TwoWay}"
+                            OffContent="Off"
+                            OnContent="On" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="Gives the game your full connection and disk; downloads resume when you stop playing."
+                    Glyph="&#xE7FC;"
+                    Header="Pause downloads while playing">
+                    <controls:SettingsCard.Action>
+                        <ToggleSwitch
+                            MinWidth="0"
+                            IsOn="{x:Bind Settings.PauseDownloadsWhilePlaying, Mode=TwoWay}"
+                            OffContent="Off"
+                            OnContent="On" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="{x:Bind Settings.InstallDirectory, Mode=OneWay}"
+                    Glyph="&#xE8B7;"
+                    Header="Default install location">
+                    <controls:SettingsCard.Action>
+                        <Button Command="{x:Bind Settings.BrowseInstallDirectoryCommand}" Content="Browse" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="Games installing at the same time; the others wait in the queue."
+                    Glyph="&#xE896;"
+                    Header="Simultaneous installs">
+                    <controls:SettingsCard.Action>
+                        <NumberBox
+                            MinWidth="140"
+                            Maximum="4"
+                            Minimum="1"
+                            SpinButtonPlacementMode="Inline"
+                            Value="{x:Bind Settings.MaxConcurrentDownloads, Mode=TwoWay}" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Performance" />
+
+                <controls:SettingsCard
+                    Description="Parallel chunk downloads per install. More is faster on fast connections."
+                    Glyph="&#xE968;"
+                    Header="Download connections">
+                    <controls:SettingsCard.Action>
+                        <NumberBox
+                            MinWidth="140"
+                            Maximum="64"
+                            Minimum="1"
+                            SpinButtonPlacementMode="Inline"
+                            Value="{x:Bind Settings.DownloadWorkers, Mode=TwoWay}" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="Total download speed in MB/s. 0 means unlimited. Applies to running installs."
+                    Glyph="&#xEC4A;"
+                    Header="Speed limit">
+                    <controls:SettingsCard.Action>
+                        <NumberBox
+                            MinWidth="140"
+                            Maximum="10000"
+                            Minimum="0"
+                            SpinButtonPlacementMode="Inline"
+                            Value="{x:Bind Settings.BandwidthLimit, Mode=TwoWay}" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="Memory for downloaded chunks waiting to be written, in MB. More reduces duplicate downloads."
+                    Glyph="&#xE964;"
+                    Header="Download cache">
+                    <controls:SettingsCard.Action>
+                        <NumberBox
+                            MinWidth="140"
+                            LargeChange="512"
+                            Maximum="8192"
+                            Minimum="128"
+                            SmallChange="128"
+                            SpinButtonPlacementMode="Inline"
+                            Value="{x:Bind Settings.ChunkCache, Mode=TwoWay}" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="Experimental. Spreads chunks across every CDN by measured speed, and re-requests slow chunks from another CDN (the first answer wins). Faster on uneven networks, uses a little more bandwidth."
+                    Glyph="&#xE7B8;"
+                    Header="Multi-CDN acceleration">
+                    <controls:SettingsCard.Action>
+                        <ToggleSwitch
+                            MinWidth="0"
+                            IsOn="{x:Bind Settings.ExperimentalMultiCdn, Mode=TwoWay}"
+                            OffContent="Off"
+                            OnContent="On" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="About" />
+
+                <controls:SettingsCard
+                    Description="{x:Bind About.UpdateStatus, Mode=OneWay}"
+                    Glyph="&#xE895;"
+                    Header="{x:Bind About.VersionText, Mode=OneWay}">
+                    <controls:SettingsCard.Action>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <ProgressRing
+                                Width="20"
+                                Height="20"
+                                IsActive="{x:Bind About.IsBusy, Mode=OneWay}" />
+                            <Button
+                                Command="{x:Bind About.CheckForUpdatesCommand}"
+                                Content="Check for updates"
+                                Visibility="{x:Bind About.CanCheck, Mode=OneWay}" />
+                            <Button
+                                Command="{x:Bind About.RestartToUpdateCommand}"
+                                Content="Restart to update"
+                                Style="{StaticResource AccentButtonStyle}"
+                                Visibility="{x:Bind About.CanRestart, Mode=OneWay}" />
+                        </StackPanel>
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="Get new features earlier, from pre-release builds. They may have rough edges."
+                    Glyph="&#xE9D5;"
+                    Header="Receive beta updates">
+                    <controls:SettingsCard.Action>
+                        <ToggleSwitch
+                            MinWidth="0"
+                            IsOn="{x:Bind Settings.ReceiveBetaUpdates, Mode=TwoWay}"
+                            OffContent="Off"
+                            OnContent="On" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

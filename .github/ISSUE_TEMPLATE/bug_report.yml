@@ -1,0 +1,41 @@
+name: Bug report
+description: Something in Halyard doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing the beta. In Halyard, open **Logs > Export report** and attach the file below:
+        it contains your logs, settings, library list and system summary. It never includes your sign-in
+        tokens or cookies, but check it before sharing: logs and settings can contain folder paths.
+  - type: input
+    id: version
+    attributes:
+      label: Halyard version
+      description: Settings > About, e.g. 0.1.0-beta.1
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the Library
+        2. Click Install on ...
+  - type: textarea
+    id: report
+    attributes:
+      label: Diagnostics report
+      description: Drag the exported report here.
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2

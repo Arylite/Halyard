@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Halyard.Models</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Only for LogLevel; models stay free of any other dependency. -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- DownloadJob state is advanced by the queue implementation only. -->
+    <InternalsVisibleTo Include="Halyard.Services" />
+  </ItemGroup>
+
+</Project>

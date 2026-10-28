@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentDialog
+    x:Class="Halyard.Views.InstallDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Halyard.ViewModels"
+    Title="{x:Bind ViewModel.Title}"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.CanInstall, Mode=OneWay}"
+    PrimaryButtonText="{x:Bind ViewModel.PrimaryText}"
+    Style="{StaticResource DefaultContentDialogStyle}">
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">640</x:Double>
+
+        <DataTemplate x:Key="OptionTemplate" x:DataType="vm:InstallOptionViewModel">
+            <Grid Padding="8,0" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <CheckBox
+                    Content="{x:Bind Name}"
+                    IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                    ToolTipService.ToolTip="{x:Bind Tag}" />
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource SecondaryTextStyle}"
+                    Text="{x:Bind SizeText}" />
+            </Grid>
+        </DataTemplate>
+    </ContentDialog.Resources>
+
+    <Grid MinWidth="480">
+        <StackPanel
+            Padding="0,24"
+            HorizontalAlignment="Center"
+            Spacing="12"
+            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+            <ProgressRing HorizontalAlignment="Center" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="Reading the build manifest..." />
+        </StackPanel>
+
+        <InfoBar
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+            Message="{x:Bind ViewModel.Error, Mode=OneWay}"
+            Severity="Error"
+            Title="Can't install this game" />
+
+        <StackPanel Spacing="16" Visibility="{x:Bind ViewModel.IsReady, Mode=OneWay}">
+            <InfoBar
+                IsClosable="False"
+                IsOpen="{x:Bind ViewModel.HasModeHint}"
+                Message="{x:Bind ViewModel.ModeHint}"
+                Severity="Informational" />
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Header="Install location" Text="{x:Bind ViewModel.InstallDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Column="1"
+                    VerticalAlignment="Bottom"
+                    Command="{x:Bind ViewModel.BrowseCommand}"
+                    Content="Browse" />
+            </Grid>
+
+            <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.HasOptionalContent, Mode=OneWay}">
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Optional content" />
+                <Border Padding="4" Style="{StaticResource CardStyle}">
+                    <ItemsRepeater ItemTemplate="{StaticResource OptionTemplate}" ItemsSource="{x:Bind ViewModel.OptionalContent}" />
+                </Border>
+            </StackPanel>
+
+            <Expander
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Header="{x:Bind ViewModel.ComponentsHeader, Mode=OneWay}"
+                Visibility="{x:Bind ViewModel.HasComponents, Mode=OneWay}">
+                <StackPanel Spacing="8">
+                    <TextBlock
+                        Style="{StaticResource SecondaryTextStyle}"
+                        Text="Part of the standard install. Untick modes or content you never play to save space."
+                        TextWrapping="Wrap" />
+                    <ScrollViewer MaxHeight="240">
+                        <ItemsRepeater ItemTemplate="{StaticResource OptionTemplate}" ItemsSource="{x:Bind ViewModel.Components}" />
+                    </ScrollViewer>
+                </StackPanel>
+            </Expander>
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.SizeSummary, Mode=OneWay}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Style="{StaticResource SecondaryTextStyle}"
+                    Text="{x:Bind ViewModel.SpaceSummary, Mode=OneWay}" />
+            </Grid>
+        </StackPanel>
+    </Grid>
+</ContentDialog>
