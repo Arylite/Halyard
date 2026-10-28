@@ -62,6 +62,10 @@ public partial class App : Application
         var presenter = _services.GetRequiredService<WindowPresenter>();
         var settings = _services.GetRequiredService<ISettingsService>();
 
+        // Formatting is static; it follows the speed unit setting from here on.
+        Formatting.ByteSize.SpeedInBits = settings.Current.ShowSpeedInBits;
+        settings.Changed += (_, current) => Formatting.ByteSize.SpeedInBits = current.ShowSpeedInBits;
+
         window.AppWindow.Closing += (_, closing) => OnWindowClosing(closing, presenter, settings);
         window.Closed += OnMainWindowClosed;
         SingleInstance.Reactivated += (_, _) => presenter.Show();

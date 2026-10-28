@@ -82,6 +82,18 @@
                     </controls:SettingsCard.Action>
                 </controls:SettingsCard>
 
+                <controls:SettingsCard
+                    Description="How download speeds are shown. Internet plans are usually sold in megabits."
+                    Glyph="&#xEC4A;"
+                    Header="Speed unit">
+                    <controls:SettingsCard.Action>
+                        <ComboBox
+                            MinWidth="240"
+                            ItemsSource="{x:Bind Settings.SpeedUnits}"
+                            SelectedIndex="{x:Bind Settings.SpeedUnitIndex, Mode=TwoWay}" />
+                    </controls:SettingsCard.Action>
+                </controls:SettingsCard>
+
                 <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Installs" />
 
                 <controls:SettingsCard
@@ -150,13 +162,13 @@
                 </controls:SettingsCard>
 
                 <controls:SettingsCard
-                    Description="Total download speed in MB/s. 0 means unlimited. Applies to running installs."
+                    Description="Total download speed, in the speed unit chosen above. 0 means unlimited. Applies to running installs."
                     Glyph="&#xEC4A;"
                     Header="Speed limit">
                     <controls:SettingsCard.Action>
                         <NumberBox
                             MinWidth="140"
-                            Maximum="10000"
+                            Maximum="100000"
                             Minimum="0"
                             SpinButtonPlacementMode="Inline"
                             Value="{x:Bind Settings.BandwidthLimit, Mode=TwoWay}" />

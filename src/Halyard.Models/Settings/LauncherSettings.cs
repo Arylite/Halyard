@@ -33,8 +33,11 @@ public sealed record LauncherSettings
     /// <summary>Parallel chunk downloads per install.</summary>
     public int DownloadWorkers { get; init; } = 16;
 
-    /// <summary>Download speed cap in MB/s; 0 means unlimited.</summary>
-    public int BandwidthLimitMegabytesPerSecond { get; init; }
+    /// <summary>Network speeds shown in megabits per second (Mb/s) instead of megabytes (MB/s).</summary>
+    public bool ShowSpeedInBits { get; init; }
+
+    /// <summary>Download speed cap in MB/s (fractions allowed); 0 means unlimited.</summary>
+    public double BandwidthLimitMegabytesPerSecond { get; init; }
 
     /// <summary>Memory kept for downloaded chunks waiting to be written, in MB.</summary>
     public int ChunkCacheMegabytes { get; init; } = 1024;

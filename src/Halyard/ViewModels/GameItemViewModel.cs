@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Halyard.Core.Auth;
@@ -75,7 +76,7 @@ public sealed partial class GameItemViewModel : ObservableObject
         Game.Title.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(word => char.ToUpperInvariant(word[0])));
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowPlay), nameof(ShowStop), nameof(ShowUpdate), nameof(ShowViewDownload), nameof(StatusText), nameof(CanVerify), nameof(CanUninstall), nameof(HasMoreActions))]
+    [NotifyPropertyChangedFor(nameof(ShowPlay), nameof(ShowStop), nameof(ShowUpdate), nameof(ShowViewDownload), nameof(ShowPrimaryAction), nameof(PrimaryActionText), nameof(PrimaryActionCommand), nameof(ShowSecondaryAction), nameof(SecondaryActionText), nameof(SecondaryActionCommand), nameof(StatusText), nameof(CanVerify), nameof(CanUninstall), nameof(HasMoreActions))]
     public partial bool IsRunning { get; set; }
 
     private bool IsBusy => _job is not null;
@@ -91,6 +92,20 @@ public sealed partial class GameItemViewModel : ObservableObject
     public bool ShowProgress => IsBusy;
 
     public bool ShowViewDownload => IsBusy && !IsRunning;
+
+    // The tile shows one main button (install, play or update) and one secondary (stop or the
+    // running download): two buttons per tile instead of five, most of them collapsed.
+    public bool ShowPrimaryAction => ShowInstall || ShowPlay || ShowUpdate;
+
+    public string PrimaryActionText => ShowPlay ? "Play" : ShowUpdate ? "Update" : "Install";
+
+    public ICommand PrimaryActionCommand => ShowPlay ? PlayCommand : ShowUpdate ? InstallUpdateCommand : InstallCommand;
+
+    public bool ShowSecondaryAction => ShowStop || ShowViewDownload;
+
+    public string SecondaryActionText => ShowStop ? "Stop" : "View download";
+
+    public ICommand SecondaryActionCommand => ShowStop ? StopCommand : ViewDownloadCommand;
 
     public double ProgressPercent => (_job?.Progress.Fraction ?? 0) * 100;
 
@@ -199,6 +214,12 @@ public sealed partial class GameItemViewModel : ObservableObject
         nameof(ShowStop),
         nameof(ShowProgress),
         nameof(ShowViewDownload),
+        nameof(ShowPrimaryAction),
+        nameof(PrimaryActionText),
+        nameof(PrimaryActionCommand),
+        nameof(ShowSecondaryAction),
+        nameof(SecondaryActionText),
+        nameof(SecondaryActionCommand),
         nameof(ProgressPercent),
         nameof(IsProgressIndeterminate),
         nameof(IsProgressPaused),
@@ -336,8 +357,5 @@ public sealed partial class GameItemViewModel : ObservableObject
         OnPropertyChanged(nameof(StatusText));
     });
 
-    private static BitmapImage? CreateCover(string? url) =>
-        Uri.TryCreate(url, UriKind.Absolute, out var uri)
-            ? new BitmapImage { UriSource = uri, DecodePixelWidth = CoverDecodeWidth, DecodePixelType = DecodePixelType.Logical }
-            : null;
+    private static BitmapImage? CreateCover(string? url) => CoverImage.Create(url, CoverDecodeWidth);
 }

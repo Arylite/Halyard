@@ -42,6 +42,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         ChunkCache = current.ChunkCacheMegabytes;
         ExperimentalMultiCdn = current.ExperimentalMultiCdn;
         ReceiveBetaUpdates = current.ReceiveBetaUpdates;
+        SpeedUnitIndex = current.ShowSpeedInBits ? SpeedUnitBits : SpeedUnitBytes;
 
         // Like Windows Settings: every change applies on its own, no Save button.
         PropertyChanged += (_, _) => ScheduleSave();
@@ -73,6 +74,30 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string InstallDirectory { get; set; }
+
+    // Indexes follow SpeedUnits.
+    private const int SpeedUnitBytes = 0;
+    private const int SpeedUnitBits = 1;
+
+    public IReadOnlyList<string> SpeedUnits { get; } = ["Megabytes per second (MB/s)", "Megabits per second (Mb/s)"];
+
+    [ObservableProperty]
+    public partial int SpeedUnitIndex { get; set; }
+
+    /// <summary>The limit is stored in MB/s (the limiter's mebibytes); the box shows the chosen unit.</summary>
+    private const double MegabitsPerMegabyte = 8 * 1.048576;
+
+    private double LimitFactor => SpeedUnitIndex == SpeedUnitBits ? MegabitsPerMegabyte : 1;
+
+    // Switching units converts the limit shown, so the actual cap stays the same.
+    partial void OnSpeedUnitIndexChanged(int oldValue, int newValue)
+    {
+        var oldFactor = oldValue == SpeedUnitBits ? MegabitsPerMegabyte : 1;
+        if (!double.IsNaN(BandwidthLimit))
+        {
+            BandwidthLimit = Math.Round(BandwidthLimit / oldFactor * LimitFactor, 1);
+        }
+    }
 
     [ObservableProperty]
     public partial double MaxConcurrentDownloads { get; set; }
@@ -124,10 +149,11 @@ public sealed partial class SettingsViewModel : ObservableObject
             InstallDirectory = string.IsNullOrWhiteSpace(InstallDirectory) ? defaults.InstallDirectory : InstallDirectory.Trim(),
             MaxConcurrentDownloads = ToInt(MaxConcurrentDownloads, 1, 4, defaults.MaxConcurrentDownloads),
             DownloadWorkers = ToInt(DownloadWorkers, 1, 64, defaults.DownloadWorkers),
-            BandwidthLimitMegabytesPerSecond = ToInt(BandwidthLimit, 0, 10_000, 0),
+            BandwidthLimitMegabytesPerSecond = double.IsNaN(BandwidthLimit) ? 0 : Math.Clamp(BandwidthLimit / LimitFactor, 0, 10_000),
             ChunkCacheMegabytes = ToInt(ChunkCache, 128, 8192, defaults.ChunkCacheMegabytes),
             ExperimentalMultiCdn = ExperimentalMultiCdn,
             ReceiveBetaUpdates = ReceiveBetaUpdates,
+            ShowSpeedInBits = SpeedUnitIndex == SpeedUnitBits,
         };
 
         try

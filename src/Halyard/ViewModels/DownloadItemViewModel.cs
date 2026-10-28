@@ -17,6 +17,9 @@ public sealed partial class DownloadItemViewModel : ObservableObject, IDisposabl
     private readonly IDialogService _dialogs;
     private readonly IUiDispatcher _dispatcher;
     private readonly Queue<double> _speedHistory = new(HistoryLength);
+    private const double CdnSmoothing = 0.25;
+
+    private readonly Dictionary<string, (long Bytes, long Timestamp, double Rate)> _cdnTotals = [];
     private long? _downloadStartedAt;
     private double _peakBytesPerSecond;
 
@@ -31,9 +34,7 @@ public sealed partial class DownloadItemViewModel : ObservableObject, IDisposabl
         _queue = queue;
         _dialogs = dialogs;
         _dispatcher = dispatcher;
-        Cover = Uri.TryCreate(coverImageUrl, UriKind.Absolute, out var uri)
-            ? new BitmapImage { UriSource = uri, DecodePixelWidth = 240, DecodePixelType = DecodePixelType.Logical }
-            : null;
+        Cover = CoverImage.Create(coverImageUrl, decodeWidth: 240);
         Job.Changed += OnJobChanged;
     }
 
@@ -92,9 +93,9 @@ public sealed partial class DownloadItemViewModel : ObservableObject, IDisposabl
         };
 
     // Live statistics for the active download.
-    public string SpeedText => $"{ByteSize.Format(Job.Progress.BytesPerSecond)}/s";
+    public string SpeedText => ByteSize.FormatSpeed(Job.Progress.BytesPerSecond);
 
-    public string DiskSpeedText => $"{ByteSize.Format(Job.Progress.DiskBytesPerSecond)}/s";
+    public string DiskSpeedText => ByteSize.FormatSpeed(Job.Progress.DiskBytesPerSecond);
 
     public string AmountText => Job.Progress.Total > 0
         ? $"{ByteSize.Format(Job.Progress.Completed)} / {ByteSize.Format(Job.Progress.Total)}"
@@ -104,10 +105,10 @@ public sealed partial class DownloadItemViewModel : ObservableObject, IDisposabl
 
     public string ConnectionsText => Job.Progress.ActiveConnections.ToString();
 
-    public string PeakSpeedText => $"{ByteSize.Format(_peakBytesPerSecond)}/s";
+    public string PeakSpeedText => ByteSize.FormatSpeed(_peakBytesPerSecond);
 
     public string AverageSpeedText => DownloadElapsed is { TotalSeconds: > 1 } elapsed
-        ? $"{ByteSize.Format(Job.Progress.Completed / elapsed.TotalSeconds)}/s"
+        ? ByteSize.FormatSpeed(Job.Progress.Completed / elapsed.TotalSeconds)
         : "-";
 
     public string ElapsedText => DownloadElapsed is { } elapsed ? Duration.Format(elapsed) : "-";
@@ -157,8 +158,7 @@ public sealed partial class DownloadItemViewModel : ObservableObject, IDisposabl
     private void OnJobChanged(object? sender, EventArgs e) => _dispatcher.Post(() =>
     {
         RecordSpeed();
-        var max = Job.Progress.Cdns.Count > 0 ? Job.Progress.Cdns.Max(cdn => cdn.BytesPerSecond) : 0;
-        Cdns = [.. Job.Progress.Cdns.Select(stat => new CdnStatViewModel(stat, max))];
+        Cdns = [.. Job.Progress.Cdns.Select(ToCdnRow)];
 
         foreach (var name in LiveProperties)
         {
@@ -195,6 +195,25 @@ public sealed partial class DownloadItemViewModel : ObservableObject, IDisposabl
         nameof(Cdns),
         nameof(HasCdns),
     ];
+
+    /// <summary>
+    /// The balancer reports each CDN's total; its growth between reports is the CDN's actual
+    /// throughput (all its connections together), smoothed like the overall speed.
+    /// </summary>
+    private CdnStatViewModel ToCdnRow(CdnStat stat)
+    {
+        var now = System.Diagnostics.Stopwatch.GetTimestamp();
+        var rate = 0.0;
+        if (_cdnTotals.TryGetValue(stat.Host, out var last))
+        {
+            var seconds = System.Diagnostics.Stopwatch.GetElapsedTime(last.Timestamp, now).TotalSeconds;
+            var sample = seconds > 0 ? Math.Max(0, stat.Bytes - last.Bytes) / seconds : 0;
+            rate = last.Rate == 0 ? sample : last.Rate + (CdnSmoothing * (sample - last.Rate));
+        }
+
+        _cdnTotals[stat.Host] = (stat.Bytes, now, rate);
+        return new CdnStatViewModel(stat, rate);
+    }
 
     /// <summary>Keeps a rolling speed history for the graphs, plus the peak and average.</summary>
     private void RecordSpeed()

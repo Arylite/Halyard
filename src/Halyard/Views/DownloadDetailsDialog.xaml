@@ -104,23 +104,32 @@
                 <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{x:Bind ViewModel.ModeText, Mode=OneWay}" />
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.Cdns, Mode=OneWay}">
                     <ItemsRepeater.Layout>
-                        <StackLayout Spacing="8" />
+                        <StackLayout Spacing="6" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="vm:CdnStatViewModel">
-                            <StackPanel Spacing="4">
-                                <Grid>
-                                    <TextBlock
-                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                        Text="{x:Bind Host}"
-                                        TextTrimming="CharacterEllipsis" />
-                                    <TextBlock
-                                        HorizontalAlignment="Right"
-                                        Style="{StaticResource SecondaryTextStyle}"
-                                        Text="{x:Bind Detail}" />
-                                </Grid>
-                                <ProgressBar Value="{x:Bind Share}" />
-                            </StackPanel>
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="90" />
+                                    <ColumnDefinition Width="110" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind Host}"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTipService.ToolTip="{x:Bind Host}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind SpeedText}" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    Style="{StaticResource SecondaryTextStyle}"
+                                    Text="{x:Bind DownloadedText}" />
+                            </Grid>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>

@@ -10,6 +10,11 @@ namespace Halyard.Services.Installs;
 /// are re-probed now and then with a single request, so a CDN that speeds up is noticed.
 /// </summary>
 /// <remarks>
+/// A worker keeps the CDN it last used while that CDN stays competitive: its pooled connection then
+/// stays warm (full TCP window, no new TLS handshake). Moving every chunk to the least busy CDN kept
+/// connections cold and made multi-CDN slower than a single CDN.
+/// </remarks>
+/// <remarks>
 /// Picking at random in proportion to speed looks fair but isn't: a CDN ten times slower gets a
 /// tenth of the requests, yet each holds a worker ten times longer, so workers spend about as much
 /// time on every CDN and throughput falls to the average CDN instead of the best one.
@@ -72,7 +77,8 @@ internal sealed class CdnBalancer
     public Uri this[int index] => _baseUris[index];
 
     /// <summary>Picks a CDN for one request, which must then end in <see cref="Report"/> or <see cref="Abandon"/>.</summary>
-    public int Pick(int attempt, int exclude = -1)
+    /// <param name="preferred">The CDN this worker used last; kept while it is competitive.</param>
+    public int Pick(int attempt, int exclude = -1, int preferred = -1)
     {
         var spreading = IsSpreading;
         lock (_gate)
@@ -104,6 +110,12 @@ internal sealed class CdnBalancer
                 {
                     best = Math.Max(best, _endpoints[i].Score);
                 }
+            }
+
+            if (preferred >= 0 && preferred < Count && preferred != exclude &&
+                _endpoints[preferred].Samples > 0 && _endpoints[preferred].Score >= best * Competitive)
+            {
+                return Take(preferred, now);
             }
 
             var choice = -1;

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reflection;
 using Halyard.Core.Auth;
@@ -80,7 +81,8 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static void AddInitializedSingleton<TService, TImplementation>(this IServiceCollection services)
+    // The annotation keeps the implementation's constructor through trimming (Native AOT builds).
+    private static void AddInitializedSingleton<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(this IServiceCollection services)
         where TService : class
         where TImplementation : class, TService, IAsyncInitializer
     {

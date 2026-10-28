@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:Halyard.ViewModels"
     Title="Halyard">
-    <!--  A flat, solid window (no Mica): the sidebar sits on it, pages on a lighter inset panel.  -->
+    <!--  A flat, solid window (no Mica): the sidebar sits on it, pages on a darker panel.  -->
     <Grid Background="{ThemeResource AppBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -86,19 +86,6 @@
             </NavigationView.FooterMenuItems>
 
             <Grid>
-                <!--  Faint accent glow at the top of every page.  -->
-                <Rectangle
-                    Height="360"
-                    VerticalAlignment="Top"
-                    IsHitTestVisible="False">
-                    <Rectangle.Fill>
-                        <RadialGradientBrush Center="0.5,0" GradientOrigin="0.5,0" RadiusX="0.7" RadiusY="1">
-                            <GradientStop Offset="0" Color="{ThemeResource AccentGlowColor}" />
-                            <GradientStop Offset="1" Color="#005E6AD2" />
-                        </RadialGradientBrush>
-                    </Rectangle.Fill>
-                </Rectangle>
-
                 <Frame x:Name="ContentFrame">
                     <Frame.ContentTransitions>
                         <TransitionCollection>

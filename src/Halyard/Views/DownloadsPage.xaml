@@ -10,16 +10,16 @@
         <Style x:Key="StatLabelStyle" BasedOn="{StaticResource CaptionTextBlockStyle}" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
         </Style>
+        <!--  One line per figure: "116.4 MB / 18.2 GB" must never wrap under its label.  -->
         <Style x:Key="StatValueStyle" BasedOn="{StaticResource SubtitleTextBlockStyle}" TargetType="TextBlock">
             <Setter Property="FontSize" Value="18" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         </Style>
 
         <!--  Compact row for queued and finished jobs.  -->
         <DataTemplate x:Key="JobRowTemplate" x:DataType="vm:DownloadItemViewModel">
-            <Border
-                Margin="0,0,0,4"
-                controls:Motion.HoverLift="True"
-                Style="{StaticResource CardStyle}">
+            <Border Margin="0,0,0,4" Style="{StaticResource CardStyle}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -144,26 +144,6 @@
             </controls:PageHeader.Actions>
         </controls:PageHeader>
 
-        <!--  Empty state  -->
-        <StackPanel
-            Grid.Row="1"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Spacing="12"
-            Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}">
-            <FontIcon FontSize="48" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Glyph="&#xE896;" />
-            <TextBlock HorizontalAlignment="Center" Style="{StaticResource SubtitleTextBlockStyle}" Text="Nothing to download" />
-            <TextBlock
-                HorizontalAlignment="Center"
-                Style="{StaticResource SecondaryTextStyle}"
-                Text="Installs, updates and repairs started from the library show up here." />
-            <Button
-                Margin="0,8,0,0"
-                HorizontalAlignment="Center"
-                Command="{x:Bind ViewModel.BrowseLibraryCommand}"
-                Content="Browse your library"
-                Style="{StaticResource AccentButtonStyle}" />
-        </StackPanel>
 
         <ScrollViewer
             Grid.Row="1"
@@ -173,29 +153,10 @@
             <StackPanel Spacing="8">
 
                 <!--  Spotlight on the active install  -->
-                <Grid Visibility="{x:Bind ViewModel.HasCurrent, Mode=OneWay}">
-                    <!--  The cover, blurred and dimmed, tints the spotlight.  -->
-                    <Border CornerRadius="{StaticResource CardCornerRadius}">
-                        <Border.Background>
-                            <ImageBrush
-                                ImageSource="{x:Bind ViewModel.Current.Cover, Mode=OneWay}"
-                                Opacity="0.55"
-                                Stretch="UniformToFill" />
-                        </Border.Background>
-                    </Border>
-                    <Border CornerRadius="{StaticResource CardCornerRadius}">
-                        <Border.Background>
-                            <AcrylicBrush
-                                FallbackColor="{ThemeResource SurfaceColor}"
-                                TintColor="{ThemeResource SurfaceColor}"
-                                TintLuminosityOpacity="0.85"
-                                TintOpacity="0.8" />
-                        </Border.Background>
-                    </Border>
                 <Border
                     Padding="24"
-                    Background="Transparent"
-                    Style="{StaticResource CardStyle}">
+                    Style="{StaticResource CardStyle}"
+                    Visibility="{x:Bind ViewModel.HasCurrent, Mode=OneWay}">
                     <Grid ColumnSpacing="24">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -254,7 +215,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="1.6*" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
@@ -289,38 +250,6 @@
                                 <controls:SpeedGraph Samples="{x:Bind ViewModel.Current.SpeedSamples, Mode=OneWay}" />
                             </Border>
 
-                            <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.Current.HasCdns, Mode=OneWay}">
-                                <TextBlock Style="{StaticResource StatLabelStyle}" Text="Content delivery networks" />
-                                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Current.Cdns, Mode=OneWay}">
-                                    <ItemsRepeater.Layout>
-                                        <StackLayout Spacing="6" />
-                                    </ItemsRepeater.Layout>
-                                    <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="vm:CdnStatViewModel">
-                                            <Grid ColumnSpacing="12">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="220" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock
-                                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                                    Text="{x:Bind Host}"
-                                                    TextTrimming="CharacterEllipsis" />
-                                                <ProgressBar
-                                                    Grid.Column="1"
-                                                    VerticalAlignment="Center"
-                                                    Value="{x:Bind Share}" />
-                                                <TextBlock
-                                                    Grid.Column="2"
-                                                    Style="{StaticResource SecondaryTextStyle}"
-                                                    Text="{x:Bind Detail}" />
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsRepeater.ItemTemplate>
-                                </ItemsRepeater>
-                            </StackPanel>
-
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <Button Command="{x:Bind ViewModel.Current.PauseCommand, Mode=OneWay}" Visibility="{x:Bind ViewModel.Current.CanPause, Mode=OneWay}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -353,20 +282,40 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-                </Grid>
 
                 <TextBlock
                     Style="{StaticResource SectionHeaderStyle}"
                     Text="Up next"
                     Visibility="{x:Bind ViewModel.HasUpcoming, Mode=OneWay}" />
-                <ItemsRepeater controls:Motion.StaggerEntrance="True" ItemTemplate="{StaticResource JobRowTemplate}" ItemsSource="{x:Bind ViewModel.Upcoming}" />
+                <ItemsRepeater ItemTemplate="{StaticResource JobRowTemplate}" ItemsSource="{x:Bind ViewModel.Upcoming}" />
 
                 <TextBlock
                     Style="{StaticResource SectionHeaderStyle}"
                     Text="Finished"
                     Visibility="{x:Bind ViewModel.HasFinished, Mode=OneWay}" />
-                <ItemsRepeater controls:Motion.StaggerEntrance="True" ItemTemplate="{StaticResource JobRowTemplate}" ItemsSource="{x:Bind ViewModel.Finished}" />
+                <ItemsRepeater ItemTemplate="{StaticResource JobRowTemplate}" ItemsSource="{x:Bind ViewModel.Finished}" />
             </StackPanel>
         </ScrollViewer>
+
+        <!--  Empty state, after the scroller so that one never covers its button.  -->
+        <StackPanel
+            Grid.Row="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="12"
+            Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}">
+            <FontIcon FontSize="48" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Glyph="&#xE896;" />
+            <TextBlock HorizontalAlignment="Center" Style="{StaticResource SubtitleTextBlockStyle}" Text="Nothing to download" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                Style="{StaticResource SecondaryTextStyle}"
+                Text="Installs, updates and repairs started from the library show up here." />
+            <Button
+                Margin="0,8,0,0"
+                HorizontalAlignment="Center"
+                Command="{x:Bind ViewModel.BrowseLibraryCommand}"
+                Content="Browse your library"
+                Style="{StaticResource AccentButtonStyle}" />
+        </StackPanel>
     </Grid>
 </Page>

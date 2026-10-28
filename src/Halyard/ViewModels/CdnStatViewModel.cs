@@ -3,14 +3,15 @@ using Halyard.Models.Downloads;
 
 namespace Halyard.ViewModels;
 
-/// <summary>One CDN row of the active download: host, speed, and its share relative to the fastest.</summary>
-public sealed record CdnStatViewModel(CdnStat Stat, double MaxBytesPerSecond)
+/// <summary>One CDN row of the active download: host, what it delivers right now, and its total so far.</summary>
+/// <param name="BytesPerSecond">Measured from the CDN's growing total, so it is the CDN's real throughput.</param>
+public sealed record CdnStatViewModel(CdnStat Stat, double BytesPerSecond)
 {
     public string Host => Stat.Host;
 
-    public string Detail => Stat.Failures > 0
-        ? $"{ByteSize.Format(Stat.BytesPerSecond)}/s per connection - {ByteSize.Format(Stat.Bytes)} - {Stat.Failures} failed"
-        : $"{ByteSize.Format(Stat.BytesPerSecond)}/s per connection - {ByteSize.Format(Stat.Bytes)}";
+    public string SpeedText => ByteSize.FormatSpeed(BytesPerSecond);
 
-    public double Share => MaxBytesPerSecond > 0 ? Stat.BytesPerSecond / MaxBytesPerSecond * 100 : 0;
+    public string DownloadedText => Stat.Failures > 0
+        ? $"{ByteSize.Format(Stat.Bytes)} - {Stat.Failures} failed"
+        : ByteSize.Format(Stat.Bytes);
 }

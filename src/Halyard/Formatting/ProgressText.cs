@@ -37,7 +37,7 @@ public static class ProgressText
             return amount;
         }
 
-        var speed = $"{ByteSize.Format(progress.BytesPerSecond)}/s";
+        var speed = ByteSize.FormatSpeed(progress.BytesPerSecond);
         return progress.Remaining is { } remaining
             ? $"{amount} - {speed} - {Duration.Format(remaining)} left"
             : $"{amount} - {speed}";

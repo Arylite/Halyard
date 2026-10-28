@@ -69,6 +69,31 @@ public sealed class CdnBalancerTests
     }
 
     [Fact]
+    public void Spread_KeepsAWorkerOnItsCdnWhileItIsCompetitive()
+    {
+        var balancer = new CdnBalancer(Cdns, spread: true);
+        for (var i = 0; i < 3; i++)
+        {
+            balancer.Pick(1);
+        }
+
+        balancer.Report(0, 1_000_000, TimeSpan.FromSeconds(1), success: true);
+        balancer.Report(1, 1_000_000, TimeSpan.FromSeconds(1.1), success: true);
+        balancer.Report(2, 1_000_000, TimeSpan.FromSeconds(10), success: true);
+
+        // B is less busy than A after these, but a worker already on A stays there (warm connection).
+        for (var i = 0; i < 8; i++)
+        {
+            balancer.Pick(1, preferred: 0);
+        }
+
+        Assert.Equal(0, balancer.Pick(1, preferred: 0));
+
+        // C isn't competitive: a worker preferring it moves.
+        Assert.NotEqual(2, balancer.Pick(1, preferred: 2));
+    }
+
+    [Fact]
     public void Spread_AbandonedSlowRequestsLowerTheCdnSpeed()
     {
         var balancer = new CdnBalancer(Cdns, spread: true);

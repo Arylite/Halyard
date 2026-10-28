@@ -87,11 +87,12 @@ public sealed class InstallPipeline(ChunkDownloader downloader)
         IDownloadMeter meter,
         CancellationToken cancellationToken)
     {
+        var affinity = new CdnAffinity();
         await foreach (var task in queue.ReadAllAsync(cancellationToken))
         {
             try
             {
-                var data = await downloader.DownloadAsync(task.Chunk, chunkDirectory, cdns, meter, cancellationToken);
+                var data = await downloader.DownloadAsync(task.Chunk, chunkDirectory, cdns, affinity, meter, cancellationToken);
                 task.Data.TrySetResult(data);
             }
             catch (Exception ex)

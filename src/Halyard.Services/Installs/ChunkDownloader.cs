@@ -15,18 +15,23 @@ public sealed class ChunkDownloader(HttpClient http, IBandwidthLimiter limiter, 
     private const int MaxAttempts = 5;
     private const int ReadSize = 1 << 16;
 
+    /// <param name="affinity">The calling worker's CDN, kept across its chunks so its connection stays warm.</param>
     internal async Task<PooledChunk> DownloadAsync(
         ManifestChunk chunk,
         string chunkDirectory,
         CdnBalancer cdns,
+        CdnAffinity affinity,
         IDownloadMeter meter,
         CancellationToken cancellationToken)
     {
         var relativePath = chunk.GetRelativePath(chunkDirectory);
+        var failed = -1;
 
         for (var attempt = 1; ; attempt++)
         {
-            var cdn = cdns.Pick(attempt);
+            // A retry goes elsewhere: the CDN that just failed is the least likely to answer.
+            var cdn = cdns.Pick(attempt, exclude: failed, preferred: attempt == 1 ? affinity.Cdn : -1);
+            affinity.Cdn = cdn;
             try
             {
                 // Hedging belongs to the multi-CDN mode, and follows it live.
@@ -36,6 +41,7 @@ public sealed class ChunkDownloader(HttpClient http, IBandwidthLimiter limiter, 
             }
             catch (Exception ex) when (attempt < MaxAttempts && IsTransient(ex) && !cancellationToken.IsCancellationRequested)
             {
+                failed = cdns.Count > 1 ? cdn : -1;
                 logger.LogDebug(ex, "Chunk {Chunk} failed on attempt {Attempt}, retrying", chunk.Guid, attempt);
                 await Task.Delay(TimeSpan.FromMilliseconds(250 * attempt * attempt), cancellationToken);
             }

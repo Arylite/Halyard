@@ -100,28 +100,30 @@
             Margin="0,0,-16,0"
             Padding="0,0,16,0"
             HorizontalScrollBarVisibility="Disabled">
-            <ItemsRepeater controls:Motion.StaggerEntrance="True" ItemsSource="{x:Bind ViewModel.Games}">
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Games}">
                 <ItemsRepeater.Layout>
-                    <!--  Uniform: cards widen to fill each row and keep their proportions.  -->
+                    <!--  Uniform: tiles widen to fill each row and keep their proportions.  -->
                     <UniformGridLayout
                         ItemsStretch="Uniform"
-                        MinColumnSpacing="16"
-                        MinItemHeight="340"
+                        MinColumnSpacing="20"
+                        MinItemHeight="350"
                         MinItemWidth="190"
-                        MinRowSpacing="16" />
+                        MinRowSpacing="24" />
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
+                    <!--
+                        A launcher tile: the cover, then title, status and actions on the page itself.
+                        Kept lean (one primary and one secondary button) because many are realized
+                        while scrolling.
+                    -->
                     <DataTemplate x:DataType="vm:GameItemViewModel">
-                        <Grid
-                            controls:Motion.HoverLift="True"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            CornerRadius="{StaticResource CardCornerRadius}">
+                        <Grid controls:Motion.HoverScope="True" Background="Transparent">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <Grid Background="{ThemeResource SubtleFillColorSecondaryBrush}">
+                            <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="{StaticResource CardCornerRadius}">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -132,12 +134,24 @@
                                     Visibility="{x:Bind ShowInitials, Mode=OneWay}" />
                                 <Image
                                     controls:FadeInImage.IsEnabled="True"
-                                    controls:Motion.ZoomOnHover="True"
                                     Source="{x:Bind Cover, Mode=OneWay}"
                                     Stretch="UniformToFill" />
+
+                                <!--  The cover lightens a touch while hovered.  -->
+                                <Border
+                                    controls:Motion.RevealOnHover="True"
+                                    Background="{ThemeResource CoverHoverBrush}"
+                                    IsHitTestVisible="False" />
+
+                                <ProgressBar
+                                    VerticalAlignment="Bottom"
+                                    IsIndeterminate="{x:Bind IsProgressIndeterminate, Mode=OneWay}"
+                                    ShowPaused="{x:Bind IsProgressPaused, Mode=OneWay}"
+                                    Visibility="{x:Bind ShowProgress, Mode=OneWay}"
+                                    Value="{x:Bind ProgressPercent, Mode=OneWay}" />
                             </Grid>
 
-                            <StackPanel Grid.Row="1" Padding="12,10,12,12">
+                            <StackPanel Grid.Row="1" Padding="0,10,0,0">
                                 <TextBlock
                                     Style="{StaticResource BodyStrongTextBlockStyle}"
                                     Text="{x:Bind Title, Mode=OneWay}"
@@ -148,12 +162,6 @@
                                     Text="{x:Bind StatusText, Mode=OneWay}"
                                     TextTrimming="CharacterEllipsis"
                                     ToolTipService.ToolTip="{x:Bind StatusText, Mode=OneWay}" />
-                                <ProgressBar
-                                    Margin="0,8,0,0"
-                                    IsIndeterminate="{x:Bind IsProgressIndeterminate, Mode=OneWay}"
-                                    ShowPaused="{x:Bind IsProgressPaused, Mode=OneWay}"
-                                    Visibility="{x:Bind ShowProgress, Mode=OneWay}"
-                                    Value="{x:Bind ProgressPercent, Mode=OneWay}" />
 
                                 <Grid Margin="0,10,0,0" ColumnSpacing="6">
                                     <Grid.ColumnDefinitions>
@@ -163,32 +171,15 @@
 
                                     <Button
                                         HorizontalAlignment="Stretch"
-                                        Command="{x:Bind InstallCommand}"
-                                        Content="Install"
+                                        Command="{x:Bind PrimaryActionCommand, Mode=OneWay}"
+                                        Content="{x:Bind PrimaryActionText, Mode=OneWay}"
                                         Style="{StaticResource AccentButtonStyle}"
-                                        Visibility="{x:Bind ShowInstall, Mode=OneWay}" />
+                                        Visibility="{x:Bind ShowPrimaryAction, Mode=OneWay}" />
                                     <Button
                                         HorizontalAlignment="Stretch"
-                                        Command="{x:Bind PlayCommand}"
-                                        Content="Play"
-                                        Style="{StaticResource AccentButtonStyle}"
-                                        Visibility="{x:Bind ShowPlay, Mode=OneWay}" />
-                                    <Button
-                                        HorizontalAlignment="Stretch"
-                                        Command="{x:Bind InstallUpdateCommand}"
-                                        Content="Update"
-                                        Style="{StaticResource AccentButtonStyle}"
-                                        Visibility="{x:Bind ShowUpdate, Mode=OneWay}" />
-                                    <Button
-                                        HorizontalAlignment="Stretch"
-                                        Command="{x:Bind ViewDownloadCommand}"
-                                        Content="View download"
-                                        Visibility="{x:Bind ShowViewDownload, Mode=OneWay}" />
-                                    <Button
-                                        HorizontalAlignment="Stretch"
-                                        Command="{x:Bind StopCommand}"
-                                        Content="Stop"
-                                        Visibility="{x:Bind ShowStop, Mode=OneWay}" />
+                                        Command="{x:Bind SecondaryActionCommand, Mode=OneWay}"
+                                        Content="{x:Bind SecondaryActionText, Mode=OneWay}"
+                                        Visibility="{x:Bind ShowSecondaryAction, Mode=OneWay}" />
 
                                     <Button
                                         Grid.Column="1"
@@ -244,21 +235,6 @@
                                     </Button>
                                 </Grid>
                             </StackPanel>
-
-                            <!--  Outline, drawn over the cover; a brighter one fades in while hovered.  -->
-                            <Border
-                                Grid.RowSpan="2"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="{StaticResource CardCornerRadius}"
-                                IsHitTestVisible="False" />
-                            <Border
-                                Grid.RowSpan="2"
-                                controls:Motion.RevealOnHover="True"
-                                BorderBrush="{ThemeResource BorderStrongBrush}"
-                                BorderThickness="1"
-                                CornerRadius="{StaticResource CardCornerRadius}"
-                                IsHitTestVisible="False" />
                         </Grid>
                     </DataTemplate>
                 </ItemsRepeater.ItemTemplate>
